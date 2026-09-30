@@ -1,0 +1,48 @@
+<section class="team-builder">
+  <div class="page-header">
+    <h1>Team Builder</h1>
+
+    <button
+      matButton="filled"
+      type="button"
+      (click)="openCreateTeamDialog()"
+    >
+      + Create Team
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="state">
+      <mat-spinner diameter="48"/>
+      <p>Loading teams...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state">
+      <p>{{ error() }}</p>
+
+      <button
+        matButton="filled"
+        type="button"
+        (click)="retry()"
+      >
+        Retry
+      </button>
+    </div>
+  } @else if (isEmpty()) {
+    <div class="state">
+      <p>No teams found.</p>
+    </div>
+  } @else {
+    <div class="team-list">
+      @for (team of teams(); track team.id) {
+        <app-team-card
+          [team]="team"
+          [pokemon]="getTeamPokemon(team.pokemonIds)"
+          [selected]="selectedTeamId() === team.id"
+          (selectTeam)="selectTeam($event)"
+          (deleteTeam)="deleteTeam($event)"
+        />
+      }
+    </div>
+  }
+</section>

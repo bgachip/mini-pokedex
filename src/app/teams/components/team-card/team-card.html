@@ -1,0 +1,64 @@
+<article
+  class="team-card"
+  [class.team-card-selected]="selected()"
+>
+  <header class="team-card-header">
+    <div>
+      <h2>{{ team().name }}</h2>
+
+      <span class="trainer">
+      Trainer #{{ team().trainerId }}
+    </span>
+    </div>
+
+    <div class="team-actions">
+      @if (selected()) {
+        <span class="selected-badge">
+        <mat-icon>check_circle</mat-icon>
+        Selected
+      </span>
+      } @else {
+        <button
+          matButton
+          type="button"
+          (click)="onSelect()"
+        >
+          Select team
+        </button>
+      }
+
+      <button
+        matIconButton
+        type="button"
+        aria-label="Delete team"
+        (click)="onDelete()"
+      >
+        <mat-icon class="delete-icon">delete</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="pokemon-list">
+    @if (pokemon().length === 0) {
+      <span class="empty-pokemon">
+        No Pokémon available
+      </span>
+    } @else {
+      @for (item of pokemon(); track item.id) {
+        <div class="pokemon">
+          @if (item.sprite) {
+            <img
+              [src]="item.sprite"
+              [alt]="item.name"
+              width="72"
+              height="72"
+            />
+          }
+
+          <span>{{ item.name }}</span>
+        </div>
+      }
+    }
+  </div>
+
+</article>

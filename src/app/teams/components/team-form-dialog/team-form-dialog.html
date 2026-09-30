@@ -1,0 +1,132 @@
+<h2 mat-dialog-title>Create Team</h2>
+
+<mat-dialog-content>
+  <form
+    id="create-team-form"
+    [formGroup]="teamForm"
+    (ngSubmit)="createTeam()"
+  >
+    <mat-form-field appearance="fill">
+      <mat-label>Team name</mat-label>
+
+      <input
+        matInput
+        formControlName="name"
+        placeholder="Enter team name"
+      />
+
+      @if (
+        teamForm.controls.name.hasError('teamNameTaken') &&
+        teamForm.controls.name.touched
+        ) {
+        <mat-error>
+          A team with this name already exists.
+        </mat-error>
+      }
+
+      @if (
+        teamForm.controls.name.hasError('required') &&
+        teamForm.controls.name.touched
+        ) {
+        <mat-error>Team name is required.</mat-error>
+      }
+
+      @if (
+        teamForm.controls.name.hasError('minlength') &&
+        teamForm.controls.name.touched
+        ) {
+        <mat-error>
+          Team name must be at least 3 characters.
+        </mat-error>
+      }
+
+      @if (
+        teamForm.controls.name.hasError('maxlength') &&
+        teamForm.controls.name.touched
+        ) {
+        <mat-error>
+          Team name cannot exceed 30 characters.
+        </mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Add Pokémon</mat-label>
+
+      <input
+        matInput
+        type="text"
+        [formControl]="pokemonSearchControl"
+        [matAutocomplete]="pokemonAutocomplete"
+        [readonly]="isTeamFull()"
+        placeholder="Search Pokémon"
+      />
+
+      @if (isTeamFull()) {
+        <mat-hint>
+          Maximum 6 Pokémon selected.
+        </mat-hint>
+      }
+
+      <mat-autocomplete
+        #pokemonAutocomplete="matAutocomplete"
+        (optionSelected)="selectPokemon($event)"
+      >
+        @for (pokemon of filteredPokemon(); track pokemon.id) {
+          <mat-option [value]="pokemon">
+            {{ pokemon.name }}
+          </mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <div class="selected-pokemon">
+      <p class="selected-pokemon-title">
+        Selected Pokémon ({{ selectedPokemon().length }}/6)
+      </p>
+
+      @if (selectedPokemon().length > 0) {
+        <mat-chip-set aria-label="Selected Pokémon">
+          @for (pokemon of selectedPokemon(); track pokemon.id) {
+            <mat-chip>
+              {{ pokemon.name }}
+
+              <button
+                matChipRemove
+                type="button"
+                [attr.aria-label]="'Remove ' + pokemon.name"
+                (click)="removePokemon(pokemon.id)"
+              >
+                ×
+              </button>
+            </mat-chip>
+          }
+        </mat-chip-set>
+      }
+    </div>
+
+    @if (submitted() && selectedPokemon().length === 0) {
+      <p class="pokemon-error">
+        Please select at least one Pokémon.
+      </p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    matButton
+    type="button"
+    (click)="cancel()"
+  >
+    Cancel
+  </button>
+
+  <button
+    matButton="filled"
+    type="submit"
+    form="create-team-form"
+  >
+    Create Team
+  </button>
+</mat-dialog-actions>
