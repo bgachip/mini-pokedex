@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import {
@@ -14,27 +15,34 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import {
   MatPaginator,
   MatPaginatorModule,
 } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSort, MatSortModule} from '@angular/material/sort';
 import {
   MatTableDataSource,
   MatTableModule,
 } from '@angular/material/table';
 
-import { PokemonStats } from '../models/pokemon.model';
-import { PokemonStore } from '../state/pokemon.store';
-import { selectAvailableTypes } from '../state/pokemon.selectors';
+import {
+  Pokemon,
+  PokemonAbility,
+  PokemonStats,
+} from '../models/pokemon.model';
+import {PokemonStore} from '../state/pokemon.store';
+import {selectAvailableTypes} from '../state/pokemon.selectors';
+import { PokemonApiService } from '../services/pokemon-api.service';
+import { PokemonDetailComponent } from '../components/pokemon-detail/pokemon-detail';
 
 @Component({
   selector: 'app-pokedex-page',
@@ -45,10 +53,12 @@ import { selectAvailableTypes } from '../state/pokemon.selectors';
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    MatIconModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatIconModule,
+    MatSidenavModule,
+    PokemonDetailComponent,
   ],
   templateUrl: './pokedex-page.html',
   styleUrl: './pokedex-page.scss',
@@ -56,6 +66,13 @@ import { selectAvailableTypes } from '../state/pokemon.selectors';
 })
 export class PokedexPageComponent {
   private readonly pokemonStore = inject(PokemonStore);
+
+  private readonly pokemonApi = inject(PokemonApiService);
+
+  readonly selectedPokemon = signal<Pokemon | null>(null);
+  readonly abilities = signal<PokemonAbility[]>([]);
+  readonly abilitiesLoading = signal(false);
+  readonly abilitiesError = signal<string | null>(null);
 
   readonly searchControl = new FormControl('', {
     nonNullable: true,
@@ -218,7 +235,47 @@ export class PokedexPageComponent {
     );
   }
 
+  selectPokemon(pokemon: Pokemon): void {
+    this.selectedPokemon.set(pokemon);
+    this.loadAbilities(pokemon.id);
+  }
+
+  closePokemonDetail(): void {
+    this.selectedPokemon.set(null);
+    this.abilities.set([]);
+    this.abilitiesError.set(null);
+  }
+
+  retryAbilities(): void {
+    const pokemon = this.selectedPokemon();
+
+    if (pokemon) {
+      this.loadAbilities(pokemon.id);
+    }
+  }
+
   private loadPokemon(): void {
     this.pokemonStore.loadPokemon();
+  }
+
+  private loadAbilities(pokemonId: number): void {
+    this.abilitiesLoading.set(true);
+    this.abilitiesError.set(null);
+    this.abilities.set([]);
+
+    this.pokemonApi
+      .getPokemonAbilities(pokemonId)
+      .subscribe({
+        next: (abilities) => {
+          this.abilities.set(abilities);
+          this.abilitiesLoading.set(false);
+        },
+        error: () => {
+          this.abilitiesError.set(
+            'Failed to load abilities. Please try again.',
+          );
+          this.abilitiesLoading.set(false);
+        },
+      });
   }
 }

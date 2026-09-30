@@ -2,8 +2,15 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, retry, timer } from 'rxjs';
 
-import { Pokemon } from '../models/pokemon.model';
-import { PokemonListResponse } from '../models/pokemon-api.model';
+import {
+  Pokemon,
+  PokemonAbility,
+} from '../models/pokemon.model';
+
+import {
+  PokemonAbilitiesResponse,
+  PokemonListResponse,
+} from '../models/pokemon-api.model';
 import { mapPokemon } from '../utils/pokemon.mapper';
 
 @Injectable({
@@ -56,6 +63,47 @@ export class PokemonApiService {
         }),
         map((response) =>
           response.data.pokemon_v2_pokemon.map(mapPokemon),
+        ),
+      );
+  }
+
+  getPokemonAbilities(pokemonId: number): Observable<PokemonAbility[]> {
+    return this.http
+      .post<PokemonAbilitiesResponse>(this.apiUrl, {
+        query: `
+        query GetAbilities($pokemonId: Int) {
+          pokemon_v2_pokemonability(
+            where: { pokemon_id: { _eq: $pokemonId } }
+          ) {
+            pokemon_v2_ability {
+              name
+              pokemon_v2_abilityeffecttexts(
+                where: { language_id: { _eq: 9 } }
+              ) {
+                short_effect
+              }
+            }
+            is_hidden
+          }
+        }
+      `,
+        variables: {
+          pokemonId,
+        },
+      })
+      .pipe(
+        retry({
+          count: 2,
+          delay: (_, retryCount) => timer(retryCount * 1000),
+        }),
+        map((response) =>
+          response.data.pokemon_v2_pokemonability.map((ability) => ({
+            name: ability.pokemon_v2_ability.name,
+            description:
+              ability.pokemon_v2_ability
+                .pokemon_v2_abilityeffecttexts[0]?.short_effect ?? '',
+            isHidden: ability.is_hidden,
+          })),
         ),
       );
   }

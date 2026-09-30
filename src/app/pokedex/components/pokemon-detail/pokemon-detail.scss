@@ -1,0 +1,241 @@
+.detail-panel {
+  width: min(480px, 100vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.detail-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  z-index: 1;
+}
+
+.detail-header h2 {
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.detail-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px 24px;
+}
+
+.pokemon-summary {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.pokemon-image {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+/* Stats */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stats div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 10px;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.stats .stat-total {
+  grid-column: 1 / -1;
+}
+
+.stats dt {
+  font-weight: 600;
+}
+
+.stats dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Radar chart */
+
+.radar-chart {
+  position: relative;
+  width: 340px;
+  max-width: calc(100% - 48px);
+  margin: 40px auto 36px;
+  padding: 32px;
+  box-sizing: border-box;
+
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.radar-chart svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.radar-grid {
+  fill: none;
+  stroke: var(--mat-sys-outline-variant);
+  stroke-width: 1;
+}
+
+.radar-grid-middle {
+  stroke-dasharray: 3 3;
+}
+
+.radar-axis {
+  stroke: var(--mat-sys-outline-variant);
+  stroke-width: 1;
+}
+
+.radar-values {
+  fill: color-mix(
+    in srgb,
+    var(--mat-sys-primary) 25%,
+    transparent
+  );
+  stroke: var(--mat-sys-primary);
+  stroke-width: 2;
+  transform-origin: 100px 100px;
+  animation: radar-grow 400ms ease-out;
+}
+
+.radar-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.radar-label strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
+
+.radar-label-hp {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.radar-label-attack {
+  top: 24%;
+  right: 0;
+}
+
+.radar-label-defense {
+  right: 0;
+  bottom: 24%;
+}
+
+.radar-label-speed {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.radar-label-special-defense {
+  bottom: 24%;
+  left: 0;
+}
+
+.radar-label-special-attack {
+  top: 24%;
+  left: 0;
+}
+
+/* Abilities */
+
+.ability {
+  margin-bottom: 16px;
+}
+
+.ability h4 {
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.ability p {
+  margin-top: 0;
+}
+
+.ability-state {
+  display: flex;
+  min-height: 100px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Animation */
+
+@keyframes radar-grow {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 420px) {
+  .detail-panel {
+    padding: 16px;
+  }
+
+  .pokemon-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stats .stat-total {
+    grid-column: auto;
+  }
+
+  .radar-chart {
+    width: 300px;
+    max-width: calc(100% - 24px);
+    padding: 28px;
+  }
+}

@@ -28,7 +28,9 @@ export interface PokemonApiStat {
 }
 
 export interface PokemonApiSprite {
-  sprites: string;
+  sprites: {
+    front_default?: string | null;
+  } | string;
 }
 
 export interface PokemonAbilitiesResponse {

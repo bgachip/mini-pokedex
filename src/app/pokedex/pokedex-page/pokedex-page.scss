@@ -47,3 +47,19 @@ th {
     }
   }
 }
+
+.pokedex-container {
+  min-height: 100vh;
+}
+
+.pokemon-detail-drawer {
+  width: min(480px, 100vw);
+}
+
+.pokemon-row {
+  cursor: pointer;
+}
+
+.pokemon-row:hover {
+  background: var(--mat-sys-surface-container);
+}

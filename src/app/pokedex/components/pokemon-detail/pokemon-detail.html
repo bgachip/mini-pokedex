@@ -1,0 +1,173 @@
+<aside class="detail-panel">
+  <header class="detail-header">
+    <h2>{{ pokemon().name }}</h2>
+
+    <button
+      matIconButton
+      type="button"
+      aria-label="Close Pokémon details"
+      (click)="closeDetail.emit()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <div class="detail-content">
+    <div class="pokemon-summary">
+      <img
+        class="pokemon-image"
+        [src]="pokemon().sprite"
+        [alt]="pokemon().name"
+      />
+
+      <div>
+        <p><strong>ID:</strong> #{{ pokemon().id }}</p>
+        <p><strong>Height:</strong> {{ pokemon().height }}</p>
+        <p><strong>Weight:</strong> {{ pokemon().weight }}</p>
+        <p>
+          <strong>Types:</strong>
+          {{ pokemon().types.join(', ') }}
+        </p>
+      </div>
+    </div>
+
+    <section>
+      <h3>Stats</h3>
+
+      <dl class="stats">
+        <div>
+          <dt>HP</dt>
+          <dd>{{ pokemon().stats.hp }}</dd>
+        </div>
+
+        <div>
+          <dt>Attack</dt>
+          <dd>{{ pokemon().stats.attack }}</dd>
+        </div>
+
+        <div>
+          <dt>Defense</dt>
+          <dd>{{ pokemon().stats.defense }}</dd>
+        </div>
+
+        <div>
+          <dt>Sp. Atk</dt>
+          <dd>{{ pokemon().stats.specialAttack }}</dd>
+        </div>
+
+        <div>
+          <dt>Sp. Def</dt>
+          <dd>{{ pokemon().stats.specialDefense }}</dd>
+        </div>
+
+        <div>
+          <dt>Speed</dt>
+          <dd>{{ pokemon().stats.speed }}</dd>
+        </div>
+
+        <div class="stat-total">
+          <dt>Total</dt>
+          <dd>{{ getTotal() }}</dd>
+        </div>
+
+      </dl>
+
+      <div class="radar-chart">
+        <svg
+          viewBox="0 0 200 200"
+          role="img"
+          [attr.aria-label]="'Stats radar chart for ' + pokemon().name"
+        >
+          <!-- outer grid -->
+          <polygon
+            class="radar-grid"
+            points="100,20 169.28,60 169.28,140 100,180 30.72,140 30.72,60"
+          />
+
+          <!-- middle grid -->
+          <polygon
+            class="radar-grid radar-grid-middle"
+            points="100,60 134.64,80 134.64,120 100,140 65.36,120 65.36,80"
+          />
+
+          <!-- axes -->
+          <line class="radar-axis" x1="100" y1="100" x2="100" y2="20"/>
+          <line class="radar-axis" x1="100" y1="100" x2="169.28" y2="60"/>
+          <line class="radar-axis" x1="100" y1="100" x2="169.28" y2="140"/>
+          <line class="radar-axis" x1="100" y1="100" x2="100" y2="180"/>
+          <line class="radar-axis" x1="100" y1="100" x2="30.72" y2="140"/>
+          <line class="radar-axis" x1="100" y1="100" x2="30.72" y2="60"/>
+
+          <!-- actual Pokémon stats -->
+          <polygon
+            class="radar-values"
+            [attr.points]="radarPoints()"
+          />
+        </svg>
+
+        <span class="radar-label radar-label-attack">
+          Attack
+          <strong>{{ pokemon().stats.attack }}</strong>
+        </span>
+
+        <span class="radar-label radar-label-defense">
+          Defense
+          <strong>{{ pokemon().stats.defense }}</strong>
+        </span>
+
+        <span class="radar-label radar-label-speed">
+          Speed
+          <strong>{{ pokemon().stats.speed }}</strong>
+        </span>
+
+        <span class="radar-label radar-label-special-defense">
+                Sp. Def
+                <strong>{{ pokemon().stats.specialDefense }}</strong>
+        </span>
+
+        <span class="radar-label radar-label-special-attack">
+          Sp. Atk
+          <strong>{{ pokemon().stats.specialAttack }}</strong>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h3>Abilities</h3>
+
+      @if (abilitiesLoading()) {
+        <div class="ability-state">
+          <mat-spinner diameter="32"/>
+        </div>
+      } @else if (abilitiesError()) {
+        <div class="ability-state">
+          <p>{{ abilitiesError() }}</p>
+
+          <button
+            matButton="filled"
+            type="button"
+            (click)="retryAbilities.emit()"
+          >
+            Retry
+          </button>
+        </div>
+      } @else if (abilities().length === 0) {
+        <p>No abilities found.</p>
+      } @else {
+        @for (ability of abilities(); track ability.name) {
+          <article class="ability">
+            <h4>
+              {{ ability.name }}
+
+              @if (ability.isHidden) {
+                <span>(hidden)</span>
+              }
+            </h4>
+
+            <p>{{ ability.description }}</p>
+          </article>
+        }
+      }
+    </section>
+  </div>
+</aside>

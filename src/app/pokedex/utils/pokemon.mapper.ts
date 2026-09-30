@@ -40,12 +40,16 @@ function getSprite(item: PokemonApiItem): string {
     return '';
   }
 
+  if (typeof sprite === 'object') {
+    return sprite.front_default ?? '';
+  }
+
   try {
-    const sprites = JSON.parse(sprite) as {
-      front_default?: string;
+    const parsedSprite = JSON.parse(sprite) as {
+      front_default?: string | null;
     };
 
-    return sprites.front_default ?? '';
+    return parsedSprite.front_default ?? '';
   } catch {
     return '';
   }
