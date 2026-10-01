@@ -11,20 +11,22 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {debounceTime, distinctUntilChanged, startWith} from 'rxjs';
 
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
+import {MatButtonModule} from '@angular/material/button';
+import {MatChipsModule} from '@angular/material/chips';
+import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
 
-import { Pokemon } from '../../../pokedex/models/pokemon.model';
-import { PokemonStore } from '../../../pokedex/state/pokemon.store';
-import { TeamStore } from '../../state/team.store';
-import { uniqueTeamNameValidator } from '../../validators/unique-team-name.validator';
+import {Pokemon} from '../../../pokedex/models/pokemon.model';
+import {PokemonStore} from '../../../pokedex/state/pokemon.store';
+import {TeamStore} from '../../state/team.store';
+import {uniqueTeamNameValidator} from '../../validators/unique-team-name.validator';
+import {MatIcon} from '@angular/material/icon';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-team-form-dialog',
@@ -36,6 +38,7 @@ import { uniqueTeamNameValidator } from '../../validators/unique-team-name.valid
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
+    MatIcon,
   ],
   templateUrl: './team-form-dialog.html',
   styleUrl: './team-form-dialog.scss',
@@ -47,6 +50,7 @@ export class TeamFormDialogComponent {
   private readonly dialogRef = inject(
     MatDialogRef<TeamFormDialogComponent>,
   );
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly submitted = signal(false);
   readonly selectedPokemon = signal<Pokemon[]>([]);
@@ -62,6 +66,8 @@ export class TeamFormDialogComponent {
   readonly pokemonSearch = toSignal(
     this.pokemonSearchControl.valueChanges.pipe(
       startWith(this.pokemonSearchControl.value),
+      debounceTime(300),
+      distinctUntilChanged(),
     ),
     {
       initialValue: '',
@@ -149,13 +155,34 @@ export class TeamFormDialogComponent {
       (pokemon) => pokemon.id,
     );
 
-    this.teamStore.createTeam(
-      1,
-      this.teamForm.controls.name.value.trim(),
-      pokemonIds,
-    );
+    this.teamStore
+      .createTeam(
+        1,
+        this.teamForm.controls.name.value.trim(),
+        pokemonIds,
+      )
+      .subscribe({
+        next: () => {
+          this.snackBar.open(
+            'Team created successfully.',
+            'Close',
+            {
+              duration: 3000,
+            },
+          );
 
-    this.dialogRef.close();
+          this.dialogRef.close();
+        },
+        error: () => {
+          this.snackBar.open(
+            'Failed to create team. Please try again.',
+            'Close',
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
   }
 
   cancel(): void {

@@ -73,6 +73,7 @@
   }
 }
 
+.pokemon-loading,
 .empty-pokemon {
   grid-column: 1 / -1;
 
@@ -84,6 +85,15 @@
 
   color: var(--mat-sys-on-surface-variant);
   font-size: 14px;
+  gap: 8px;
+}
+
+.empty-pokemon {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-pokemon mat-icon {
+  color: var(--mat-sys-outline);
 }
 
 .team-actions {

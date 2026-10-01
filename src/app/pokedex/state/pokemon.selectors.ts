@@ -1,30 +1,6 @@
-import { combineLatest, distinctUntilChanged, map, Observable } from 'rxjs';
+import {distinctUntilChanged, map, Observable, shareReplay} from 'rxjs';
 
-import { Pokemon } from '../models/pokemon.model';
-
-export function selectPokemonCount(
-  pokemon$: Observable<Pokemon[]>,
-): Observable<number> {
-  return pokemon$.pipe(
-    map((pokemon) => pokemon.length),
-    distinctUntilChanged(),
-  );
-}
-
-export function selectPokemonByType(
-  pokemon$: Observable<Pokemon[]>,
-  selectedType$: Observable<string | null>,
-): Observable<Pokemon[]> {
-  return combineLatest([pokemon$, selectedType$]).pipe(
-    map(([pokemon, selectedType]) => {
-      if (!selectedType) {
-        return pokemon;
-      }
-
-      return pokemon.filter((item) => item.types.includes(selectedType));
-    }),
-  );
-}
+import {Pokemon} from '../models/pokemon.model';
 
 export function selectAvailableTypes(
   pokemon$: Observable<Pokemon[]>,
@@ -35,5 +11,11 @@ export function selectAvailableTypes(
 
       return [...new Set(types)].sort();
     }),
+    distinctUntilChanged(
+      (previous, current) =>
+        previous.length === current.length &&
+        previous.every((type, index) => type === current[index]),
+    ),
+    shareReplay(1),
   );
 }

@@ -1,9 +1,33 @@
-mat-toolbar {
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-layout {
   display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-toolbar {
+  flex: 0 0 auto;
   gap: 24px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.app-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 nav {
   display: flex;
   gap: 8px;
+}
+
+.active-link {
+  color: var(--mat-sys-primary);
+  background-color: var(--mat-sys-primary-container);
 }

@@ -9,6 +9,9 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {TeamFormDialogComponent} from '../../components/team-form-dialog/team-form-dialog';
 import {Pokemon} from '../../../pokedex/models/pokemon.model';
 import {TeamCardComponent} from '../../components/team-card/team-card';
+import {MatIcon} from '@angular/material/icon';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {DeleteTeamDialogComponent} from '../../components/delete-team-dialog/delete-team-dialog';
 
 @Component({
   selector: 'app-team-builder-page',
@@ -17,6 +20,7 @@ import {TeamCardComponent} from '../../components/team-card/team-card';
     MatProgressSpinnerModule,
     MatDialogModule,
     TeamCardComponent,
+    MatIcon,
   ],
   templateUrl: './team-builder-page.html',
   styleUrl: './team-builder-page.scss',
@@ -26,6 +30,7 @@ export class TeamBuilderPageComponent {
   private readonly teamStore = inject(TeamStore);
   private readonly pokemonStore = inject(PokemonStore);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly selectedTeamId = signal<number | null>(
     this.loadSelectedTeamId(),
@@ -33,6 +38,10 @@ export class TeamBuilderPageComponent {
 
   readonly pokemon = toSignal(this.pokemonStore.pokemon$, {
     initialValue: [],
+  });
+
+  readonly pokemonLoading = toSignal(this.pokemonStore.loading$, {
+    initialValue: false,
   });
 
   readonly teams = toSignal(this.teamStore.teams$, {
@@ -99,7 +108,54 @@ export class TeamBuilderPageComponent {
   }
 
   deleteTeam(teamId: number): void {
-    this.teamStore.deleteTeam(teamId);
+    const team = this.teams().find(
+      (team) => team.id === teamId,
+    );
+
+    if (!team) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(
+      DeleteTeamDialogComponent,
+      {
+        width: '400px',
+        data: {
+          teamName: team.name,
+        },
+      },
+    );
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
+
+      this.teamStore.deleteTeam(teamId).subscribe({
+        next: () => {
+          if (this.selectedTeamId() === teamId) {
+            this.selectedTeamId.set(null);
+          }
+
+          this.snackBar.open(
+            'Team deleted successfully.',
+            'Close',
+            {
+              duration: 3000,
+            },
+          );
+        },
+        error: () => {
+          this.snackBar.open(
+            'Failed to delete team. Please try again.',
+            'Close',
+            {
+              duration: 5000,
+            },
+          );
+        },
+      });
+    });
   }
 
   selectTeam(teamId: number): void {

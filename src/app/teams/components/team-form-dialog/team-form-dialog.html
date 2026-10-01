@@ -78,7 +78,14 @@
           </mat-option>
         }
       </mat-autocomplete>
+
     </mat-form-field>
+
+    @if (submitted() && selectedPokemon().length === 0) {
+      <p class="pokemon-error">
+        Please select at least one Pokémon.
+      </p>
+    }
 
     <div class="selected-pokemon">
       <p class="selected-pokemon-title">
@@ -94,10 +101,11 @@
               <button
                 matChipRemove
                 type="button"
+                class="remove-pokemon-button"
                 [attr.aria-label]="'Remove ' + pokemon.name"
                 (click)="removePokemon(pokemon.id)"
               >
-                ×
+                <mat-icon>cancel</mat-icon>
               </button>
             </mat-chip>
           }
@@ -105,11 +113,6 @@
       }
     </div>
 
-    @if (submitted() && selectedPokemon().length === 0) {
-      <p class="pokemon-error">
-        Please select at least one Pokémon.
-      </p>
-    }
   </form>
 </mat-dialog-content>
 
@@ -117,8 +120,10 @@
   <button
     matButton
     type="button"
+    class="cancel-button"
     (click)="cancel()"
   >
+    <mat-icon>close</mat-icon>
     Cancel
   </button>
 
@@ -127,6 +132,7 @@
     type="submit"
     form="create-team-form"
   >
+    <mat-icon>add</mat-icon>
     Create Team
   </button>
 </mat-dialog-actions>

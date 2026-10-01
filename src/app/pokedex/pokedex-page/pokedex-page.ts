@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  computed, DestroyRef,
   effect,
   inject,
   signal,
@@ -15,7 +15,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import {toSignal} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
@@ -66,8 +66,8 @@ import { PokemonDetailComponent } from '../components/pokemon-detail/pokemon-det
 })
 export class PokedexPageComponent {
   private readonly pokemonStore = inject(PokemonStore);
-
   private readonly pokemonApi = inject(PokemonApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly selectedPokemon = signal<Pokemon | null>(null);
   readonly abilities = signal<PokemonAbility[]>([]);
@@ -265,6 +265,9 @@ export class PokedexPageComponent {
 
     this.pokemonApi
       .getPokemonAbilities(pokemonId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
         next: (abilities) => {
           this.abilities.set(abilities);

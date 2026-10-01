@@ -1,5 +1,11 @@
-.pokedex {
-  padding: 24px;
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.pokedex-container {
+  height: 100%;
 }
 
 .state-container {
@@ -11,36 +17,35 @@
   gap: 16px;
 }
 
-table {
-  width: 100%;
+.pokedex {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 24px;
 }
 
-.pokemon-sprite {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-td,
-th {
-  white-space: nowrap;
+.pokedex h1 {
+  flex: 0 0 auto;
 }
 
 .filters {
+  flex: 0 0 auto;
   display: flex;
   gap: 16px;
-  align-items: center;
-  margin-bottom: 16px;
 
   mat-form-field {
-    width: 240px;
+    width: 280px;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .filters {
     flex-direction: column;
-    align-items: stretch;
+    gap: 0;
 
     mat-form-field {
       width: 100%;
@@ -48,18 +53,38 @@ th {
   }
 }
 
-.pokedex-container {
-  min-height: 100vh;
+.table-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.pokemon-row {
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container-high);
+  }
 }
 
 .pokemon-detail-drawer {
   width: min(480px, 100vw);
 }
 
-.pokemon-row {
-  cursor: pointer;
+.mat-mdc-header-row {
+  background-color: var(--mat-sys-surface);
+  z-index: 10;
 }
 
-.pokemon-row:hover {
-  background: var(--mat-sys-surface-container);
+mat-paginator {
+  flex: 0 0 auto;
+}
+
+.clear-button-hidden {
+  visibility: hidden;
 }

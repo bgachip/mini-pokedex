@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, finalize } from 'rxjs';
+import {BehaviorSubject, catchError, finalize, Observable, tap, throwError} from 'rxjs';
 
 import { Team } from '../models/team.model';
 import { TeamApiService } from '../services/team-api.service';
@@ -49,7 +49,7 @@ export class TeamStore {
     trainerId: number,
     name: string,
     pokemonIds: number[],
-  ): void {
+  ): Observable<Team> {
     const previousTeams = this.teamsSubject.value;
 
     const optimisticTeam: Team = {
@@ -67,10 +67,10 @@ export class TeamStore {
 
     this.errorSubject.next(null);
 
-    this.teamApi
+    return this.teamApi
       .createTeam(trainerId, name, pokemonIds)
-      .subscribe({
-        next: (createdTeam) => {
+      .pipe(
+        tap((createdTeam) => {
           this.teamsSubject.next(
             this.teamsSubject.value.map((team) =>
               team.id === optimisticTeam.id
@@ -78,21 +78,26 @@ export class TeamStore {
                 : team,
             ),
           );
-        },
-        error: () => {
+        }),
+        catchError((error) => {
           this.teamsSubject.next(previousTeams);
 
           this.errorSubject.next(
             'Failed to create team. Please try again.',
           );
-        },
-      });
+
+          return throwError(() => error);
+        }),
+      );
   }
 
   /**
    * Deletes a team using an optimistic update.
    */
-  deleteTeam(teamId: number): void {
+  /**
+   * Deletes a team using an optimistic update.
+   */
+  deleteTeam(teamId: number): Observable<Team> {
     const previousTeams = this.teamsSubject.value;
 
     this.teamsSubject.next(
@@ -101,14 +106,16 @@ export class TeamStore {
 
     this.errorSubject.next(null);
 
-    this.teamApi.deleteTeam(teamId).subscribe({
-      error: () => {
+    return this.teamApi.deleteTeam(teamId).pipe(
+      catchError((error) => {
         this.teamsSubject.next(previousTeams);
 
         this.errorSubject.next(
           'Failed to delete team. Please try again.',
         );
-      },
-    });
+
+        return throwError(() => error);
+      }),
+    );
   }
 }

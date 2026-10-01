@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 mat-dialog-content {
   padding-top: 15px;
 }
@@ -31,4 +33,33 @@ mat-form-field {
 mat-dialog-actions {
   padding: 8px 24px 20px;
   gap: 8px;
+}
+
+.remove-pokemon-button {
+  @include mat.button-overrides((
+    text-label-text-color: var(--mat-sys-error),
+    text-state-layer-color: var(--mat-sys-error),
+    text-ripple-color: var(--mat-sys-error),
+  ));
+
+  mat-icon {
+    transition: color 150ms ease;
+  }
+
+  &:hover mat-icon {
+    color: var(--mat-sys-error);
+  }
+}
+
+
+.cancel-button {
+  @include mat.button-overrides((
+    text-label-text-color: var(--mat-sys-error),
+    text-state-layer-color: var(--mat-sys-error),
+    text-ripple-color: var(--mat-sys-error),
+  ));
+
+  mat-icon {
+    color: var(--mat-sys-error);
+  }
 }

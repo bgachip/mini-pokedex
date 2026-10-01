@@ -23,6 +23,7 @@
           type="button"
           (click)="onSelect()"
         >
+          <mat-icon>check_circle</mat-icon>
           Select team
         </button>
       }
@@ -30,6 +31,7 @@
       <button
         matIconButton
         type="button"
+        matTooltip="Delete team"
         aria-label="Delete team"
         (click)="onDelete()"
       >
@@ -39,10 +41,16 @@
   </header>
 
   <div class="pokemon-list">
-    @if (pokemon().length === 0) {
-      <span class="empty-pokemon">
-        No Pokémon available
-      </span>
+    @if (loading()) {
+      <div class="pokemon-loading">
+        <mat-spinner diameter="20"/>
+        <span>Loading Pokémon...</span>
+      </div>
+    } @else if (pokemon().length === 0) {
+      <div class="empty-pokemon">
+        <mat-icon>info</mat-icon>
+        <span>No Pokémon available</span>
+      </div>
     } @else {
       @for (item of pokemon(); track item.id) {
         <div class="pokemon">
@@ -55,7 +63,9 @@
             />
           }
 
-          <span>{{ item.name }}</span>
+          <span [matTooltip]="item.name">
+            {{ item.name }}
+          </span>
         </div>
       }
     }

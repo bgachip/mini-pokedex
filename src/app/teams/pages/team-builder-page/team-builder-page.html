@@ -7,7 +7,8 @@
       type="button"
       (click)="openCreateTeamDialog()"
     >
-      + Create Team
+      <mat-icon>add</mat-icon>
+      Create Team
     </button>
   </div>
 
@@ -39,6 +40,7 @@
           [team]="team"
           [pokemon]="getTeamPokemon(team.pokemonIds)"
           [selected]="selectedTeamId() === team.id"
+          [loading]="pokemonLoading()"
           (selectTeam)="selectTeam($event)"
           (deleteTeam)="deleteTeam($event)"
         />

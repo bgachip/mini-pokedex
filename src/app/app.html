@@ -1,15 +1,27 @@
-<mat-toolbar>
-  <span>Mini Pokédex</span>
+<div class="app-layout">
+  <mat-toolbar>
+    <span>Mini Pokédex</span>
 
-  <nav>
-    <a matButton routerLink="/">
-      Pokédex
-    </a>
+    <nav>
+      <a
+        matButton
+        routerLink="/pokedex"
+        routerLinkActive="active-link"
+      >
+        Pokédex
+      </a>
 
-    <a matButton routerLink="/teams">
-      Team Builder
-    </a>
-  </nav>
-</mat-toolbar>
+      <a
+        matButton
+        routerLink="/teams"
+        routerLinkActive="active-link"
+      >
+        Team Builder
+      </a>
+    </nav>
+  </mat-toolbar>
 
-<router-outlet />
+  <main class="app-content">
+    <router-outlet/>
+  </main>
+</div>
