@@ -24,46 +24,39 @@ export class PokemonApiService {
   private pokemonListCache$?: Observable<Pokemon[]>;
 
   /**
-   * Fetches and caches the first 151 Pokémon.
+   * Fetches and caches the Pokémon list.
    */
-  getPokemonList(
-    limit: number,
-    offset: number,
-  ): Observable<Pokemon[]> {
-    if (
-      limit === 151 &&
-      offset === 0 &&
-      this.pokemonListCache$
-    ) {
+  getPokemonList(): Observable<Pokemon[]> {
+    if (this.pokemonListCache$) {
       return this.pokemonListCache$;
     }
 
-    const request$ = this.http
+    this.pokemonListCache$ = this.http
       .post<PokemonListResponse>(this.apiUrl, {
         query: `
-        query GetPokemon($limit: Int, $offset: Int) {
-          pokemon_v2_pokemon(limit: $limit, offset: $offset) {
-            id
-            name
-            height
-            weight
-            pokemon_v2_pokemontypes {
-              pokemon_v2_type { name }
-            }
-            pokemon_v2_pokemonstats {
-              base_stat
-              pokemon_v2_stat { name }
-            }
-            pokemon_v2_pokemonsprites {
-              sprites
+          query GetPokemon {
+            pokemon_v2_pokemon {
+              id
+              name
+              height
+              weight
+              pokemon_v2_pokemontypes {
+                pokemon_v2_type {
+                  name
+                }
+              }
+              pokemon_v2_pokemonstats {
+                base_stat
+                pokemon_v2_stat {
+                  name
+                }
+              }
+              pokemon_v2_pokemonsprites {
+                sprites
+              }
             }
           }
-        }
-      `,
-        variables: {
-          limit,
-          offset,
-        },
+        `,
       })
       .pipe(
         retry({
@@ -77,13 +70,15 @@ export class PokemonApiService {
         shareReplay(1),
       );
 
-    if (limit === 151 && offset === 0) {
-      this.pokemonListCache$ = request$;
-    }
-
-    return request$;
+    return this.pokemonListCache$;
   }
 
+  /**
+   * Fetches the abilities of a Pokémon by its ID.
+   *
+   * @param pokemonId The ID of the Pokémon.
+   * @returns An observable containing the Pokémon's abilities.
+   */
   getPokemonAbilities(pokemonId: number): Observable<PokemonAbility[]> {
     return this.http
       .post<PokemonAbilitiesResponse>(this.apiUrl, {

@@ -63,7 +63,14 @@
         </div>
       } @else {
         <div class="table-container">
-          <table mat-table [dataSource]="dataSource" matSort>
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="name"
+            matSortDirection="asc"
+            (matSortChange)="onSortChange($event)"
+          >
             <ng-container matColumnDef="sprite">
               <th mat-header-cell *matHeaderCellDef>Sprite</th>
 
@@ -154,10 +161,13 @@
         </div>
 
         <mat-paginator
+          [length]="totalCount()"
           [pageSize]="10"
           [pageSizeOptions]="[10, 25, 50]"
+          (page)="onPageChange($event)"
           showFirstLastButtons
-        />
+        >
+        </mat-paginator>
 
       }
     </section>

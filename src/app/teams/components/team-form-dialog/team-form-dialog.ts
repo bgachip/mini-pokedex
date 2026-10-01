@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import {ChangeDetectionStrategy, Component, computed, inject, signal,} from '@angular/core';
+import {FormControl, FormGroup, ReactiveFormsModule, Validators,} from '@angular/forms';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {debounceTime, distinctUntilChanged, startWith} from 'rxjs';
 
@@ -59,6 +48,20 @@ export class TeamFormDialogComponent {
     initialValue: [],
   });
 
+  readonly pokemonLoading = toSignal(
+    this.pokemonStore.loading$,
+    {
+      initialValue: false,
+    },
+  );
+
+  readonly pokemonError = toSignal(
+    this.pokemonStore.error$,
+    {
+      initialValue: null,
+    },
+  );
+
   readonly pokemonSearchControl = new FormControl('', {
     nonNullable: true,
   });
@@ -102,14 +105,18 @@ export class TeamFormDialogComponent {
       .toLowerCase();
 
     const selectedIds = new Set(
-      this.selectedPokemon().map((pokemon) => pokemon.id),
+      this.selectedPokemon().map(
+        (pokemon) => pokemon.id,
+      ),
     );
 
     return this.pokemon()
       .filter(
         (pokemon) =>
           !selectedIds.has(pokemon.id) &&
-          pokemon.name.toLowerCase().includes(searchTerm),
+          pokemon.name
+            .toLowerCase()
+            .includes(searchTerm),
       )
       .slice(0, 10);
   });
@@ -183,6 +190,10 @@ export class TeamFormDialogComponent {
           );
         },
       });
+  }
+
+  retryPokemon(): void {
+    this.pokemonStore.loadPokemon();
   }
 
   cancel(): void {

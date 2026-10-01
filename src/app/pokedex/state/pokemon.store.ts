@@ -19,7 +19,7 @@ export class PokemonStore {
   readonly error$ = this.errorSubject.asObservable();
 
   /**
-   * Loads and caches the first 151 Pokémon.
+   * Loads and caches the Pokémon list.
    */
   loadPokemon(): void {
     if (this.pokemonSubject.value.length > 0) {
@@ -30,8 +30,10 @@ export class PokemonStore {
     this.errorSubject.next(null);
 
     this.pokemonApi
-      .getPokemonList(151, 0)
-      .pipe(finalize(() => this.loadingSubject.next(false)))
+      .getPokemonList()
+      .pipe(
+        finalize(() => this.loadingSubject.next(false)),
+      )
       .subscribe({
         next: (pokemon) => {
           this.pokemonSubject.next(pokemon);

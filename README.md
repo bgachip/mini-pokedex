@@ -19,15 +19,16 @@ The application uses the PokéAPI GraphQL API for Pokémon data and a local Grap
 
 ### Pokédex
 
-- Displays the first 151 Pokémon
-- Search by Pokémon name
-- Filter by Pokémon type
-- Sort by stats and total base stats
-- Pagination with 10, 25 and 50 items per page
+- Browse Pokémon retrieved from the PokéAPI GraphQL API
+- Search Pokémon by name with debounced input
+- Filter Pokémon by type
+- Sort Pokémon by individual stats and total base stats
+- Client-side pagination with 10, 25 and 50 items per page
 - Pokémon detail side panel
 - Ability information
 - Animated radar chart for Pokémon stats
-- Loading, empty and error states with retry support
+- Loading, empty, error and success states
+- Retry support for failed requests
 
 ### Team Builder
 
@@ -54,7 +55,7 @@ Make sure the following are installed:
 
 Clone the repository and install the dependencies:
 
-```bash id="yynp8f"
+```bash
 git clone https://github.com/bgachip/mini-pokedex
 cd mini-pokedex
 npm install
@@ -66,13 +67,13 @@ The Team Builder uses a local GraphQL mock server.
 
 Start it from the project root:
 
-```bash id="ipkw0f"
+```bash
 npx json-graphql-server db.js --port 4000
 ```
 
 The GraphQL server will be available at:
 
-```text id="xtwm71"
+```text
 http://localhost:4000
 ```
 
@@ -82,19 +83,19 @@ Keep the mock server running while using the Team Builder.
 
 Open another terminal and run:
 
-```bash id="8q69l9"
+```bash
 npm start
 ```
 
 or:
 
-```bash id="h02kq4"
+```bash
 ng serve
 ```
 
 Then open:
 
-```text id="yl2i37"
+```text
 http://localhost:4200
 ```
 
@@ -102,7 +103,7 @@ http://localhost:4200
 
 Run the test suite with:
 
-```bash id="6amoj7"
+```bash
 npm test
 ```
 
@@ -117,15 +118,15 @@ The tests cover:
 
 Create a production build with:
 
-```bash id="9mp19n"
+```bash
 ng build
 ```
 
 ## Architecture
 
-The application uses a feature-based structure, with the Pokédex and Team Builder implemented as separate feature areas.
+The application follows a feature-based structure, with the Pokédex and Team Builder implemented as separate feature areas.
 
-```text id="7pfj0w"
+```text
 src/
 ├── app/
 │   ├── pokedex/
@@ -159,7 +160,7 @@ src/
 
 ### Feature Organization
 
-The `pokedex` feature contains Pokémon browsing, searching, filtering, sorting, pagination, detail display and Pokémon-related state management.
+The `pokedex` feature contains Pokémon browsing, searching, filtering, sorting, client-side pagination, detail display and Pokémon-related state management.
 
 The `teams` feature contains team listing, team creation and deletion, Pokémon selection, validation and team-related state management.
 
@@ -167,27 +168,63 @@ The `teams` feature contains team listing, team creation and deletion, Pokémon 
 
 The application uses lightweight custom stores based on RxJS `BehaviorSubject`.
 
-Pokémon and team data are exposed as observable streams. Angular Signals are used for local UI state and derived values.
+The Pokémon store caches fetched Pokémon data and exposes it as observable state. Team state is managed in a separate store.
 
-`toSignal()` is used to bridge observable store state into Angular Signals where appropriate.
+Derived Pokémon data such as filtering, sorting and pagination is handled through RxJS selector functions rather than modifying the source state.
+
+Angular Signals are used for local UI state and derived UI values.
+
+`toSignal()` is used to bridge observable store and selector state into Angular Signals where appropriate.
 
 ### RxJS
 
-RxJS is used for asynchronous data flows including:
+RxJS is used for asynchronous and derived data flows including:
 
-- debounced Pokémon search
+- debounced Pokémon search using `debounceTime`, `distinctUntilChanged` and `switchMap`
 - Pokémon autocomplete
-- derived store selectors
+- derived filtering, sorting and pagination
+- combining state with `combineLatest`
+- shared derived streams with `shareReplay`
 - API requests
 - optimistic updates and rollback
 
+Subscriptions that require explicit lifecycle handling use Angular's `takeUntilDestroyed()` integration.
+
 ### Angular Signals
 
-Angular Signals are used for local UI state such as the selected Pokémon and selected team.
+Angular Signals are used for local UI state such as the selected Pokémon, Pokémon detail state and selected team.
 
 `computed()` is used for derived UI state.
 
 `effect()` is used to persist the selected team to `localStorage`.
+
+`toSignal()` is used where observable state needs to be consumed as Signals in components.
+
+### Pokédex Data Flow
+
+Pokémon data is fetched through the PokéAPI GraphQL API and cached in the Pokémon store.
+
+The displayed table data is derived client-side:
+
+```text
+PokéAPI
+   ↓
+PokemonStore
+   ↓
+Search / Type Filter
+   ↓
+Filtering
+   ↓
+Sorting
+   ↓
+Pagination
+   ↓
+Pokédex Table
+```
+
+Changing the search term or type filter resets the table to the first page.
+
+Pokémon detail data uses the selected Pokémon from the cached list, while ability information is loaded separately when the detail panel is opened.
 
 ### Optimistic Updates
 
@@ -199,7 +236,7 @@ The local state is updated immediately while the API request is running. If the 
 
 Pokémon data is retrieved from the PokéAPI GraphQL endpoint:
 
-```text id="7j9uxk"
+```text
 https://beta.pokeapi.co/graphql/v1beta
 ```
 
