@@ -1,59 +1,218 @@
-# MiniPokedex
+# Mini Pokédex
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+A small Angular application for browsing Pokémon and building custom Pokémon teams.
 
-## Development server
+The application uses the PokéAPI GraphQL API for Pokémon data and a local GraphQL mock server for team management.
 
-To start a local development server, run:
+## Tech Stack
 
-```bash
+- Angular 21
+- TypeScript
+- Angular Material
+- RxJS
+- Angular Signals
+- Reactive Forms
+- GraphQL
+- Vitest
+
+## Features
+
+### Pokédex
+
+- Displays the first 151 Pokémon
+- Search by Pokémon name
+- Filter by Pokémon type
+- Sort by stats and total base stats
+- Pagination with 10, 25 and 50 items per page
+- Pokémon detail side panel
+- Ability information
+- Animated radar chart for Pokémon stats
+- Loading, empty and error states with retry support
+
+### Team Builder
+
+- View existing teams
+- Create new teams
+- Delete teams with confirmation
+- Select and persist the selected team
+- Pokémon autocomplete
+- Add between 1 and 6 Pokémon to a team
+- Unique team name validation
+- Optimistic create and delete operations with rollback on API failure
+- Success and error feedback
+
+## Getting Started
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Node.js
+- npm
+
+### Installation
+
+Clone the repository and install the dependencies:
+
+```bash id="yynp8f"
+git clone https://github.com/bgachip/mini-pokedex
+cd mini-pokedex
+npm install
+```
+
+## Running the Mock GraphQL Server
+
+The Team Builder uses a local GraphQL mock server.
+
+Start it from the project root:
+
+```bash id="ipkw0f"
+npx json-graphql-server db.js --port 4000
+```
+
+The GraphQL server will be available at:
+
+```text id="xtwm71"
+http://localhost:4000
+```
+
+Keep the mock server running while using the Team Builder.
+
+## Running the Application
+
+Open another terminal and run:
+
+```bash id="8q69l9"
+npm start
+```
+
+or:
+
+```bash id="h02kq4"
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Then open:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```text id="yl2i37"
+http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Running Tests
 
-```bash
-ng generate --help
+Run the test suite with:
+
+```bash id="6amoj7"
+npm test
 ```
 
-## Building
+The tests cover:
 
-To build the project run:
+- optimistic store rollback
+- Pokémon selector logic
+- async unique team name validation
+- basic application rendering
 
-```bash
+## Production Build
+
+Create a production build with:
+
+```bash id="9mp19n"
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Architecture
 
-## Running unit tests
+The application uses a feature-based structure, with the Pokédex and Team Builder implemented as separate feature areas.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```text id="7pfj0w"
+src/
+├── app/
+│   ├── pokedex/
+│   │   ├── components/
+│   │   ├── models/
+│   │   ├── pokedex-page/
+│   │   ├── services/
+│   │   ├── state/
+│   │   └── utils/
+│   │
+│   ├── teams/
+│   │   ├── components/
+│   │   ├── models/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── state/
+│   │   ├── utils/
+│   │   └── validators/
+│   │
+│   ├── app.config.ts
+│   ├── app.html
+│   ├── app.routes.ts
+│   ├── app.scss
+│   ├── app.spec.ts
+│   └── app.ts
+│
+├── index.html
+├── main.ts
+└── styles.scss
 ```
 
-## Running end-to-end tests
+### Feature Organization
 
-For end-to-end (e2e) testing, run:
+The `pokedex` feature contains Pokémon browsing, searching, filtering, sorting, pagination, detail display and Pokémon-related state management.
 
-```bash
-ng e2e
+The `teams` feature contains team listing, team creation and deletion, Pokémon selection, validation and team-related state management.
+
+### State Management
+
+The application uses lightweight custom stores based on RxJS `BehaviorSubject`.
+
+Pokémon and team data are exposed as observable streams. Angular Signals are used for local UI state and derived values.
+
+`toSignal()` is used to bridge observable store state into Angular Signals where appropriate.
+
+### RxJS
+
+RxJS is used for asynchronous data flows including:
+
+- debounced Pokémon search
+- Pokémon autocomplete
+- derived store selectors
+- API requests
+- optimistic updates and rollback
+
+### Angular Signals
+
+Angular Signals are used for local UI state such as the selected Pokémon and selected team.
+
+`computed()` is used for derived UI state.
+
+`effect()` is used to persist the selected team to `localStorage`.
+
+### Optimistic Updates
+
+Team creation and deletion use optimistic updates.
+
+The local state is updated immediately while the API request is running. If the request fails, the previous state is restored and error feedback is displayed to the user.
+
+## APIs
+
+Pokémon data is retrieved from the PokéAPI GraphQL endpoint:
+
+```text id="7j9uxk"
+https://beta.pokeapi.co/graphql/v1beta
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Team data is managed through the local GraphQL mock server running on port `4000`.
 
-## Additional Resources
+## Possible Improvements
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Given more development time, possible improvements would include:
+
+- additional component and integration tests
+- end-to-end tests for the main user flows
+- improved accessibility and keyboard navigation
+- more advanced Pokémon filtering
+- stronger API error handling
+- improved responsive layouts for smaller screens
+- additional reusable UI components
