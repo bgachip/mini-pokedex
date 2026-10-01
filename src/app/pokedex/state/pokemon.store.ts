@@ -19,9 +19,6 @@ export class PokemonStore {
   readonly error$ = this.errorSubject.asObservable();
 
   /**
-   * Loads Pokémon from the API.
-   */
-  /**
    * Loads and caches the first 151 Pokémon.
    */
   loadPokemon(): void {
