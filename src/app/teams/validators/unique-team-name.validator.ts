@@ -28,7 +28,7 @@ export function uniqueTeamNameValidator(
 
         const exists = teams.some(
           (team) =>
-            team.name.toLowerCase() === name,
+            team.name.trim().toLowerCase() === name
         );
 
         return exists

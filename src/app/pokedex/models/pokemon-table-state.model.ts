@@ -1,8 +1,3 @@
-export interface PokemonFilters {
-  searchTerm: string;
-  type: string;
-}
-
 export type PokemonSortField =
   | 'name'
   | 'hp'

@@ -159,18 +159,18 @@
   bottom: 24%;
 }
 
-.radar-label-speed {
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
 .radar-label-special-defense {
   bottom: 24%;
   left: 0;
 }
 
 .radar-label-special-attack {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.radar-label-speed {
   top: 24%;
   left: 0;
 }

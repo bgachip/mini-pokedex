@@ -44,6 +44,13 @@ export class TeamBuilderPageComponent {
     initialValue: false,
   });
 
+  readonly pokemonError = toSignal(
+    this.pokemonStore.error$,
+    {
+      initialValue: null,
+    },
+  );
+
   readonly teams = toSignal(this.teamStore.teams$, {
     initialValue: [],
   });
@@ -81,6 +88,10 @@ export class TeamBuilderPageComponent {
 
   retry(): void {
     this.loadTeams();
+  }
+
+  retryPokemon(): void {
+    this.pokemonStore.loadPokemon();
   }
 
   openCreateTeamDialog(): void {

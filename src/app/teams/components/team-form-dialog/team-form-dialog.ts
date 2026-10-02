@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject, signal,} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators,} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {debounceTime, distinctUntilChanged, startWith} from 'rxjs';
 
@@ -16,6 +16,7 @@ import {TeamStore} from '../../state/team.store';
 import {uniqueTeamNameValidator} from '../../validators/unique-team-name.validator';
 import {MatIcon} from '@angular/material/icon';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {trimmedLengthValidator} from '../../validators/trimmed-length.validator';
 
 @Component({
   selector: 'app-team-form-dialog',
@@ -81,9 +82,7 @@ export class TeamFormDialogComponent {
     name: new FormControl('', {
       nonNullable: true,
       validators: [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.maxLength(30),
+        trimmedLengthValidator(3, 30),
       ],
       asyncValidators: [
         uniqueTeamNameValidator(this.teamStore.teams$),

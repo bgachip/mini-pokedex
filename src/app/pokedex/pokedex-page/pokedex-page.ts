@@ -1,68 +1,35 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  signal, viewChild,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, viewChild,} from '@angular/core';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  finalize,
   map,
   of,
   startWith,
   switchMap,
 } from 'rxjs';
-import {
-  takeUntilDestroyed,
-  toSignal,
-} from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import {
-  MatPaginator,
-  MatPaginatorModule,
-  PageEvent,
-} from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  MatSortModule,
-  Sort,
-} from '@angular/material/sort';
-import {
-  MatTableDataSource,
-  MatTableModule,
-} from '@angular/material/table';
+import {takeUntilDestroyed, toSignal,} from '@angular/core/rxjs-interop';
+import {FormControl, ReactiveFormsModule,} from '@angular/forms';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatPaginator, MatPaginatorModule, PageEvent,} from '@angular/material/paginator';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSortModule, Sort,} from '@angular/material/sort';
+import {MatTableDataSource, MatTableModule,} from '@angular/material/table';
 
-import {
-  Pokemon,
-  PokemonAbility,
-  PokemonStats,
-} from '../models/pokemon.model';
-import {
-  PokemonFilters,
-  PokemonPagination,
-  PokemonSort,
-} from '../models/pokemon-table-state.model';
-import { PokemonStore } from '../state/pokemon.store';
-import {
-  selectAvailableTypes,
-  selectFilteredPokemon,
-  selectPagedPokemon,
-} from '../state/pokemon.selectors';
-import { PokemonApiService } from '../services/pokemon-api.service';
-import { PokemonDetailComponent } from '../components/pokemon-detail/pokemon-detail';
+import {Pokemon, PokemonAbility, PokemonStats,} from '../models/pokemon.model';
+import {PokemonPagination, PokemonSort,} from '../models/pokemon-table-state.model';
+import {PokemonStore} from '../state/pokemon.store';
+import {selectAvailableTypes, selectFilteredPokemon, selectPagedPokemon,} from '../state/pokemon.selectors';
+import {PokemonApiService} from '../services/pokemon-api.service';
+import {PokemonDetailComponent} from '../components/pokemon-detail/pokemon-detail';
 
 @Component({
   selector: 'app-pokedex-page',
@@ -116,12 +83,29 @@ export class PokedexPageComponent {
       pageSize: 10,
     });
 
-  private readonly search$ =
+  private readonly selectedPokemonIdSubject =
+    new BehaviorSubject<number | null>(null);
+
+  private readonly searchedPokemon$ =
     this.searchControl.valueChanges.pipe(
       startWith(this.searchControl.value),
       debounceTime(300),
       distinctUntilChanged(),
-      switchMap((searchTerm) => of(searchTerm)),
+      switchMap((searchTerm) =>
+        this.pokemonStore.pokemon$.pipe(
+          map((pokemon) => {
+            const normalizedSearchTerm = searchTerm
+              .trim()
+              .toLowerCase();
+
+            return pokemon.filter((item) =>
+              item.name
+                .toLowerCase()
+                .includes(normalizedSearchTerm),
+            );
+          }),
+        ),
+      ),
     );
 
   private readonly type$ =
@@ -130,27 +114,10 @@ export class PokedexPageComponent {
       distinctUntilChanged(),
     );
 
-  private readonly filters$ = combineLatest([
-    this.search$,
-    this.type$,
-  ]).pipe(
-    map(
-      ([searchTerm, type]): PokemonFilters => ({
-        searchTerm,
-        type,
-      }),
-    ),
-    distinctUntilChanged(
-      (previous, current) =>
-        previous.searchTerm === current.searchTerm &&
-        previous.type === current.type,
-    ),
-  );
-
   private readonly filteredPokemon$ =
     selectFilteredPokemon(
-      this.pokemonStore.pokemon$,
-      this.filters$,
+      this.searchedPokemon$,
+      this.type$,
     );
 
   private readonly pagedPokemon$ =
@@ -159,6 +126,20 @@ export class PokedexPageComponent {
       this.sortSubject.asObservable(),
       this.paginationSubject.asObservable(),
     );
+
+  readonly sort = toSignal(
+    this.sortSubject.asObservable(),
+    {
+      initialValue: this.sortSubject.value,
+    },
+  );
+
+  readonly pagination = toSignal(
+    this.paginationSubject.asObservable(),
+    {
+      initialValue: this.paginationSubject.value,
+    },
+  );
 
   readonly pokemon = toSignal(
     this.pokemonStore.pokemon$,
@@ -169,13 +150,6 @@ export class PokedexPageComponent {
 
   readonly filteredPokemon = toSignal(
     this.filteredPokemon$,
-    {
-      initialValue: [],
-    },
-  );
-
-  readonly pagedPokemon = toSignal(
-    this.pagedPokemon$,
     {
       initialValue: [],
     },
@@ -232,7 +206,45 @@ export class PokedexPageComponent {
   ];
 
   constructor() {
-    this.filters$
+    this.selectedPokemonIdSubject
+      .pipe(
+        switchMap((pokemonId) => {
+          if (pokemonId === null) {
+            this.abilities.set([]);
+            this.abilitiesError.set(null);
+            this.abilitiesLoading.set(false);
+
+            return of<PokemonAbility[]>([]);
+          }
+
+          this.abilitiesLoading.set(true);
+          this.abilitiesError.set(null);
+          this.abilities.set([]);
+
+          return this.pokemonApi
+            .getPokemonAbilities(pokemonId)
+            .pipe(
+              catchError(() => {
+                this.abilitiesError.set(
+                  'Failed to load abilities. Please try again.',
+                );
+                this.abilitiesLoading.set(false);
+
+                return of<PokemonAbility[]>([]);
+              }),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((abilities) => {
+        this.abilities.set(abilities);
+        this.abilitiesLoading.set(false);
+      });
+
+    combineLatest([
+      this.searchedPokemon$,
+      this.type$,
+    ])
       .pipe(
         takeUntilDestroyed(this.destroyRef),
       )
@@ -292,20 +304,20 @@ export class PokedexPageComponent {
 
   selectPokemon(pokemon: Pokemon): void {
     this.selectedPokemon.set(pokemon);
-    this.loadAbilities(pokemon.id);
+    this.selectedPokemonIdSubject.next(pokemon.id);
   }
 
   closePokemonDetail(): void {
     this.selectedPokemon.set(null);
-    this.abilities.set([]);
-    this.abilitiesError.set(null);
+    this.selectedPokemonIdSubject.next(null);
   }
 
   retryAbilities(): void {
     const pokemon = this.selectedPokemon();
 
     if (pokemon) {
-      this.loadAbilities(pokemon.id);
+      this.selectedPokemonIdSubject.next(null);
+      this.selectedPokemonIdSubject.next(pokemon.id);
     }
   }
 
@@ -328,31 +340,5 @@ export class PokedexPageComponent {
 
   private loadPokemon(): void {
     this.pokemonStore.loadPokemon();
-  }
-
-  private loadAbilities(
-    pokemonId: number,
-  ): void {
-    this.abilitiesLoading.set(true);
-    this.abilitiesError.set(null);
-    this.abilities.set([]);
-
-    this.pokemonApi
-      .getPokemonAbilities(pokemonId)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: (abilities) => {
-          this.abilities.set(abilities);
-          this.abilitiesLoading.set(false);
-        },
-        error: () => {
-          this.abilitiesError.set(
-            'Failed to load abilities. Please try again.',
-          );
-          this.abilitiesLoading.set(false);
-        },
-      });
   }
 }

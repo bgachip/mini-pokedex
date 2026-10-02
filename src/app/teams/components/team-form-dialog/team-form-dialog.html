@@ -76,15 +76,28 @@
           <mat-option disabled>
             Loading Pokémon...
           </mat-option>
+        } @else if (pokemonError(); as error) {
+          <mat-option disabled>
+            {{ error }}
+          </mat-option>
+
+          <mat-option>
+            <button
+              matButton
+              type="button"
+              (click)="retryPokemon(); $event.stopPropagation()"
+            >
+              Retry
+            </button>
+          </mat-option>
         } @else if (
-          !pokemonError() &&
           !isTeamFull() &&
           filteredPokemon().length === 0
           ) {
           <mat-option disabled>
             No Pokémon found.
           </mat-option>
-        } @else if (!pokemonError()) {
+        } @else {
           @for (
             pokemon of filteredPokemon();
             track pokemon.id
@@ -97,20 +110,6 @@
       </mat-autocomplete>
 
     </mat-form-field>
-
-    @if (pokemonError(); as error) {
-      <div class="pokemon-load-error">
-        <span>{{ error }}</span>
-
-        <button
-          matButton
-          type="button"
-          (click)="retryPokemon()"
-        >
-          Retry
-        </button>
-      </div>
-    }
 
     @if (submitted() && selectedPokemon().length === 0) {
       <p class="pokemon-error">

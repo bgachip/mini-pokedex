@@ -33,18 +33,32 @@
     <div class="state">
       <p>No teams found.</p>
     </div>
+  } @else if (pokemonError()) {
+    <div class="state">
+      <p>{{ pokemonError() }}</p>
+
+      <button
+        matButton="filled"
+        type="button"
+        (click)="retryPokemon()"
+      >
+        Retry
+      </button>
+    </div>
   } @else {
     <div class="team-list">
-      @for (team of teams(); track team.id) {
-        <app-team-card
-          [team]="team"
-          [pokemon]="getTeamPokemon(team.pokemonIds)"
-          [selected]="selectedTeamId() === team.id"
-          [loading]="pokemonLoading()"
-          (selectTeam)="selectTeam($event)"
-          (deleteTeam)="deleteTeam($event)"
-        />
-      }
+      <div class="team-list">
+        @for (team of teams(); track team.id) {
+          <app-team-card
+            [team]="team"
+            [pokemon]="getTeamPokemon(team.pokemonIds)"
+            [selected]="selectedTeamId() === team.id"
+            [loading]="pokemonLoading()"
+            (selectTeam)="selectTeam($event)"
+            (deleteTeam)="deleteTeam($event)"
+          />
+        }
+      </div>
     </div>
   }
 </section>

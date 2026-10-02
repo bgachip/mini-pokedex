@@ -99,10 +99,12 @@
           <line class="radar-axis" x1="100" y1="100" x2="30.72" y2="60"/>
 
           <!-- actual Pokémon stats -->
-          <polygon
-            class="radar-values"
-            [attr.points]="radarPoints()"
-          />
+          @for (currentPokemon of [pokemon()]; track currentPokemon.id) {
+            <polygon
+              class="radar-values"
+              [attr.points]="radarPoints()"
+            />
+          }
         </svg>
 
         <span class="radar-label radar-label-attack">

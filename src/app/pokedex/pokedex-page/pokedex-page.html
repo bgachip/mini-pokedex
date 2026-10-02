@@ -67,8 +67,8 @@
             mat-table
             [dataSource]="dataSource"
             matSort
-            matSortActive="name"
-            matSortDirection="asc"
+            [matSortActive]="sort().active"
+            [matSortDirection]="sort().direction"
             (matSortChange)="onSortChange($event)"
           >
             <ng-container matColumnDef="sprite">
@@ -162,7 +162,8 @@
 
         <mat-paginator
           [length]="totalCount()"
-          [pageSize]="10"
+          [pageIndex]="pagination().pageIndex"
+          [pageSize]="pagination().pageSize"
           [pageSizeOptions]="[10, 25, 50]"
           (page)="onPageChange($event)"
           showFirstLastButtons

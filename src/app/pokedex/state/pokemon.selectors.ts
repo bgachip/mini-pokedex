@@ -8,7 +8,6 @@ import {
 
 import { Pokemon } from '../models/pokemon.model';
 import {
-  PokemonFilters,
   PokemonPagination,
   PokemonSort,
 } from '../models/pokemon-table-state.model';
@@ -29,36 +28,32 @@ export function selectAvailableTypes(
           (type, index) => type === current[index],
         ),
     ),
-    shareReplay(1),
+    shareReplay({
+      bufferSize: 1,
+      refCount: true,
+    }),
   );
 }
 
 export function selectFilteredPokemon(
   pokemon$: Observable<Pokemon[]>,
-  filters$: Observable<PokemonFilters>,
+  type$: Observable<string>,
 ): Observable<Pokemon[]> {
   return combineLatest([
     pokemon$,
-    filters$,
+    type$,
   ]).pipe(
-    map(([pokemon, filters]) => {
-      const searchTerm = filters.searchTerm
-        .trim()
-        .toLowerCase();
-
-      return pokemon.filter((item) => {
-        const matchesName = item.name
-          .toLowerCase()
-          .includes(searchTerm);
-
-        const matchesType =
-          !filters.type ||
-          item.types.includes(filters.type);
-
-        return matchesName && matchesType;
-      });
+    map(([pokemon, type]) =>
+      pokemon.filter(
+        (item) =>
+          !type ||
+          item.types.includes(type),
+      ),
+    ),
+    shareReplay({
+      bufferSize: 1,
+      refCount: true,
     }),
-    shareReplay(1),
   );
 }
 
@@ -93,7 +88,10 @@ export function selectPagedPokemon(
             pokemon.id === current[index]?.id,
         ),
     ),
-    shareReplay(1),
+    shareReplay({
+      bufferSize: 1,
+      refCount: true,
+    }),
   );
 }
 

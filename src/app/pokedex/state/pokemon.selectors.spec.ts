@@ -71,14 +71,11 @@ describe('Pokemon selectors', () => {
     ]);
   });
 
-  it('should filter Pokémon by name and type', async () => {
+  it('should filter Pokémon by type', async () => {
     const result = await firstValueFrom(
       selectFilteredPokemon(
         of(pokemon),
-        of({
-          searchTerm: 'saur',
-          type: 'grass',
-        }),
+        of('grass'),
       ),
     );
 
